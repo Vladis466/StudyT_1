@@ -65,9 +65,18 @@
 		<script type="application/javascript" src="app_framework/2.1/appframework.ui.js" data-ver="1"></script>
 		<script type="application/javascript" src="app_framework/pageChangeRepeater.js"></script>
 		<script type="application/javascript" src="xdk/ad/af_subpage.js"></script>
+		<script type="application/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCMghhKAJhAL0U-gvam_2ZMqtQycYmOomw&amp;amp&amp;"></script>
+		<script type="application/javascript" src="google_maps/google_maps.js"></script>
 		<!--My Scripts -->
 		<script type="application/javascript" src="js/timer-script.js"></script>
 		<script type="application/javascript" src="js/index_user_scripts.js"></script>
+		<script type="application/javascript" src="js/mapit.js"></script>
+		<!--   
+   You may substitute jQuery for the App Framework selector library.
+   See http://app-framework-software.intel.com/documentation.php#afui/afui_jquery
+  -->
+		<script type="application/javascript" src="lib/jquery.min.js"></script>
+
 	</head>
 
 	<body id="afui">
@@ -75,7 +84,8 @@
 		<!-- IMPORTANT: Do not include your weinre script tag as part of your release builds! -->
 		<!-- Place your remote debugging (weinre) script URL from the Test tab here, if it does not work above -->
 		<!-- <script src="http://debug-software.intel.com/target/target-script-min.js#insertabiglongfunkynumberfromthexdkstesttab"></script> -->
-		<header class="wrapping-col wrap-element uib_w_3 with-back" data-uib="app_framework/header" data-ver="2" id="af-header-0"><a class="button backButton">Back</a>
+		<header class="wrapping-col wrap-element uib_w_3 with-back" data-uib="app_framework/header" data-ver="2" id="af-header-0">
+			<!--<a class="button backButton">Back</a>-->
 			<h1 class="apptitle">StudyT</h1>
 		</header>
 
@@ -94,6 +104,7 @@
 
 				<a class="button widget uib_w_56 d-margins" data-uib="app_framework/button" data-ver="1">Find me now!</a>
 				<a class="button widget uib_w_58 d-margins" data-uib="app_framework/button" data-ver="1">Hi There</a>
+				<a class="button widget uib_w_85 d-margins slate" data-uib="app_framework/button" data-ver="1" href="Login_Page" id="logout">Log Out</a>
 			</div>
 			<!------------------------------------------->
 
@@ -142,7 +153,7 @@
 
 			</div>
 
-			<!--POSITION 2 PAGE------------------------------->
+			<!--ADD a TIMESTUDY PAGE------------------------------->
 			<div class="upage vertical-col panel" id="Position2" data-header="af-header-0" data-footer="af-footer-2">
 
 				<div class="widget uib_w_18 d-margins PositioningText" data-uib="media/text" data-ver="0">
@@ -157,12 +168,11 @@
 				</div>
 
 				<!-- TEXT AREA FOR PROCEDURE KEYS-->
-				<div class="table-thing with-label widget uib_w_67 d-margins" data-uib="app_framework/textarea" data-ver="1">
-					<label class="narrow-control label-inline">Procedure Keys (add in each key seperated by a comma, no spaces)</label>
-					<br>
-					<br>
+				<div data-uib="app_framework/textarea" data-ver="1">
+					<label class="narrow-control label-inline">Procedure Names</label>
 					<textarea id="studyKeys" class="wide-control" placeholder="Placeholder Text" rows="2" wrap="soft"></textarea>
 				</div>
+				<p>Add these in seperated by commas. Procedures must already exist</p>
 
 				<a class="button widget uib_w_59 d-margins" data-uib="app_framework/button" data-ver="1">Current TimeStudies available</a>
 
@@ -181,14 +191,6 @@
 			<!--ADD A PROCEDURE PAGE------------------------------->
 			<div class="upage vertical-col left panel" id="Position3" data-header="af-header-0" data-footer="af-footer-3">
 
-				<div class="widget uib_w_21 d-margins PositioningText" data-uib="media/text" data-ver="0">
-					<div class="widget-container left-receptacle"></div>
-					<div class="widget-container right-receptacle"></div>
-					<div>
-						<p id="procedureResults"></p>
-					</div>
-				</div>
-
 				<a class="button widget uib_w_68 d-margins" data-uib="app_framework/button" data-ver="1">Add a Procedure</a>
 				<div class="table-thing with-label widget uib_w_70 d-margins" data-uib="app_framework/input" data-ver="1">
 					<label class="narrow-control label-inline">Procedure Name</label>
@@ -206,34 +208,27 @@
 
 			<!--START A STUDY PAGE------------------------------->
 			<div id="instance-view" class="upage panel" data-header="af-header-0" data-footer="af-footer-4">
-
 				<div class="upage-content ac0 content-area vertical-col left" id="uib_page_4">
 					<a class="button widget uib_w_71 d-margins" data-uib="app_framework/button" data-ver="1">Start a Study</a>
 					<div class="table-thing with-label widget uib_w_72 d-margins" data-uib="app_framework/input" data-ver="1">
 						<label class="narrow-control label-inline">Study Name</label>
 						<input id="instName" class="wide-control" placeholder="Placeholder Text" type="text">
 					</div>
-
 					<a class="button widget uib_w_62 d-margins" data-uib="app_framework/button" data-ver="1">Current existing study instances</a>
 					<div class="widget uib_w_24 d-margins PositioningText" data-uib="media/text" data-ver="0">
 						<div class="widget-container left-receptacle"></div>
 						<div class="widget-container right-receptacle"></div>
 						<div>
-
 							<p id="instanceResults">*note: If the study does not already exist you will not be able to create a study instance.</p>
 						</div>
 					</div>
-
 				</div>
-
 				<!------------------------------------------------------------------------------SUBPAGE FOR RUNNING THE ACTUAL STUDY--------------------------------------------------------------------->
 				<div align="center" id="uib_page_3" class="upage-content vertical-col left hidden">
-
 					<div id="study_title" style="margin-bottom:30px; margin-top:20 px;">
 						<p>&nbsp;</p>
 					</div>
 					<div style="margin-bottom:30px; margin-top:20 px;"></div>
-
 					<!--Timer Code will appear in here -->
 					<div id="timer_container">
 
@@ -248,7 +243,13 @@
 
 				</div>
 
-			</div>
+			</div>			
+			
+			
+			
+			
+			
+			
 
 			<!--------------------------------------------------------------------------------Last Random ass Page----------------------------------------------------------------------------------->
 			<div class="upage panel" id="Resources" data-header="af-header-0" data-footer="af-footer-0">
@@ -263,8 +264,55 @@
 						id="button2" href="http://proj2-1095.appspot.com/TimeStudies" data-transition="fade">
 							<img>
 							<span class="uib-caption">App Api</span>
-						</a><a class="button widget uib_w_51 d-margins" data-uib="app_framework/button" data-ver="1">Secret!</a>
+						</a><a id="generatemap" class="button widget uib_w_51 d-margins" data-uib="app_framework/button" data-ver="1">See map data</a>
 					</div>
+
+					<div id="instmap" class="upage-content vertical-col left hidden">
+						<!--<div class="widget uib_w_86 maps-size d-margins" data-uib="media/google_maps" data-ver="0" data-rpath="null" data-zoom="8">-->
+
+				
+							
+							
+							
+							
+							
+							
+							
+							
+							
+<h1>Geographical locations of Instances</h1>
+<h3>Base Timestudy: </h3>
+<p>This is a map of Kandy, Sri Lanka, the ancient capital and a world heritage city. This app helps you explore the historic city and its famous landmarks, including the famous Temple of the Tooth Relic.</p>
+<div id="googleMapsOne" style="width:auto;height:300px;margin-top:20px;margin-bottom:20px;"></div>
+<span><strong>Zoom:</strong></span> <input type="range" id="rng" min="5" max="18" value="8" step="1" style="height:10px;width:60%;" onchange="initialize()"> 
+						<input type="checkbox" name="chkbox" value="mkr" id="mkr" onclick="initialize()">City Centre
+						
+						
+<p>Do you fancy a walk from <strong>Kandy City Centre?</strong> Choose a <strong>radius</strong> and explore the surroundings. You may <strong>zoom</strong> the selected area.</strong></p> 
+
+				<input type="button" value="Mark It" id="mkr" onclick="initialize()" style="margin-top:20px;" onclick="initialize()">						
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+							
+						</div>
+					</div>
+
 				</div>
 			</div>
 
@@ -350,6 +398,10 @@
 			</footer>
 
 		</div>
+		
+
+
+		
 	</body>
 
 </html>

@@ -2,7 +2,11 @@
 /*global $:false, intel:false */
 /*jshint browser:true */
 /*jslint smarttabs:true */
-/*global $ */(function()
+/*global $ */
+
+//Global object pointer. Used to keep a log of the current procedure/studies.
+ var currentInstance = {};
+(function()
 {
  "use strict";
  /*
@@ -11,6 +15,7 @@
 	
  var Uname = "";
  var userLocation;
+
  function register_event_handlers()
  {
  //Global username variable is used throughout the project
@@ -52,28 +57,6 @@
 		}
     });
     
-        /* button  New Study */
-    
-    
-        /* button  YOULIKETHAT ??? What does this do?*/
-    
-    
-        /* button  Pass */
-    $(document).on("click", ".uib_w_84", function(evt)
-    {
-         /*global activate_subpage */
-         activate_subpage("#uib_page_3"); 
-    });
-    
-        /* button  Cancel Study */
-    $(document).on("click", ".uib_w_83", function(evt)
-    {
-        /* your code goes here */ 
-		document.getElementById("studyResults").innerHTML = "";
-		activate_subpage("#instance-view");
-    });
-    
-        /* listitem  Study Instances */
     
     
         /* listitem  Study Instances */
@@ -83,9 +66,9 @@
          activate_subpage("#uib_page_4"); 
     });
     
-    }
+
 	
-	
+
     
         /* button  Return --return to previous page*/
     $(document).on("click", ".uib_w_55", function(evt)
@@ -95,7 +78,7 @@
     });
     
     
-        /* button  Back to resources */
+        /* button  Find me now! */
     $(document).on("click", ".uib_w_56", function(evt)
     {
         /* your code goes here */ 
@@ -135,11 +118,7 @@
     });
     
         /* button  Secret! */
-    $(document).on("click", ".uib_w_51", function(evt)
-    {
-         /*global activate_subpage */
-         activate_subpage("#boobeer"); 
-    });
+    
     
         /* button  Clear */
     $(document).on("click", ".uib_w_63", function(evt)
@@ -149,22 +128,22 @@
 		document.getElementById("procedureResults").innerHTML = "";
 		document.getElementById("instanceResults").innerHTML = "";
 		document.getElementById("frontPage").innerHTML = "";
-		document.getElementById("TimeDisplayBox").value = "";
-		document.getElementById("endTime").value = "";
-		document.getElementById("startTime").value = "";
+		document.getElementById("timer_container").innerHTML = "";
     });
     
         /* button  Add a study */
     $(document).on("click", ".uib_w_64", function(evt)
     {
         /* your code goes here */ 
-		var Tkeys = document.getElementById("studyKeys").value; 
+		var Tprocs = document.getElementById("studyKeys").value; 
 		var Tname = document.getElementById("studyName").value;
-
-		intel.xdk.device.getRemoteData("http://proj2-1095.appspot.com/TimeStudies", "POST", "name=" + Tname + "&procedures[]=" + Tkeys, "POSTsuccess_handler", "POSTerror_handler");
 		
-		document.getElementById("studyResults").innerHTML = "TimeStudy: " + Tname + "<br>was added succesfully with the following keys:" +
-																		    "<br><br>" + Tkeys;
+		if (Tprocs === "" || Tname === "")
+			document.getElementById("studyResults").innerHTML = "Invalid input. None found";
+		else
+			intel.xdk.device.getRemoteData("http://proj2-1095.appspot.com/TimeStudies", "POST", "name=" + Tname + "&procedures[]=" + Tprocs, "POSTsuccess_handler", "POSTerror_handler");
+		
+		
 		
 		
     });
@@ -174,17 +153,14 @@
     {
         /* your code goes here */ 
 		var Pname = document.getElementById("procName").value; 
-		var Piter = document.getElementById("procIter").value;
-	    if (isNaN(Piter)) 
+	    if (Pname === "") 
 		{
-			alert("Must input numbers");
-			return false;
+			document.getElementById("procedureResults").innerHTML = "Must input a valid name";
 		} else
 		{
-		intel.xdk.device.getRemoteData("http://proj2-1095.appspot.com/studyProcedures", "POST", "name=" + Pname + "&iter=" + Piter, "POSTsuccess_handler", "POSTerror_handler");
-		
-		document.getElementById("procedureResults").innerHTML = "Procedure: " + Pname + "<br>was added succesfully running the following iteration:" +
-																		    "<br><br>" + Piter;
+			intel.xdk.device.getRemoteData("http://proj2-1095.appspot.com/studyProcedures", "POST", "name=" + Pname, "POSTsuccess_handler", "POSTerror_handler");
+
+			document.getElementById("procedureResults").innerHTML = "Procedure: " + Pname + "<br>was added succesfully";
 
 		}		
     });
@@ -201,15 +177,63 @@
 		//get users location to input into the model
 		var userLoc = navigator.geolocation.getCurrentPosition(onSuccess, onError);
 		
-	  //STILL NEED TO FIX THE GEOLOCATION, NOT RETURNING CORRECTLY --->lol function variables maaaaan
+	  
 		intel.xdk.device.getRemoteData("http://proj2-1095.appspot.com/TSinstance", "POST", "name=" + studyName + "&user=" + 
 									   Uname + "&location=" + userLocation, "TSInstance_handler", "POSTerror_handler");
 
     });
 	
+	    //We can feed in the datetime values into the object
+        // Send a request to update the study, now that the instance object has been updated with the time values
+        /* button  Submit Study */
+    $(document).on("click", ".uib_w_83", function(evt)
+    {
+        /* your code goes here */
+		activate_subpage("#uib_page_4");
+		document.getElementById("timer_container").innerHTML = "";
+		document.getElementById("instanceResults").innerHTML = "";
+		var studyName = currentInstance.studyName;
+		var procTimes = JSON.stringify(currentInstance);                  //So easy I love it
+		console.log(procTimes);
 
+		intel.xdk.device.getRemoteData("http://proj2-1095.appspot.com/TSinstance", "POST", "name=" + studyName + "&choice=updatetime" + "&procTimes=" + procTimes, "POSTsuccess_handler", "POSTerror_handler");		
+    });
+	 
+	 
+	 
+         /* button  Cancel Study */
+    $(document).on("click", ".uib_w_84", function(evt)
+    {
+        /* your code goes here */ 
+		activate_subpage("#uib_page_4");
+		document.getElementById("timer_container").innerHTML = "";
+		document.getElementById("instanceResults").innerHTML = "";
+    });
+	 
+	 
+    
+        /* button  #generatemap */
+    $(document).on("click", "#generatemap", function(evt)
+    {
+        /* your code goes here */ 
+		//initMap();
+		activate_subpage("#instmap");
+    });
+    
+    
+        /* button  Log Out */
+    $(document).on("click", ".uib_w_85", function(evt)
+    {
+		 Uname = "";
+		 document.getElementById("passInput").value = "";
+		 document.getElementById("nameInput").value = "";
+		document.getElementById("authResponse").innerHTML = "";
+    });
+    
+
+    }
+	
 //These two functions handle getting the geolocation of the app.
-
     var onSuccess = function(position) 
 	{  
 		
@@ -231,6 +255,7 @@
 	{
 	document.getElementById("frontPage").innerHTML = 'code: '    + error.code    + '\n' + 'message: ' + error.message + '\n';
     }	
+	
 
 	
  document.addEventListener("app.Ready", register_event_handlers, false);
@@ -241,6 +266,17 @@
 
 
         
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -348,21 +384,18 @@ function authenticate_User(data)
 {
 	if (String(data) == "yes")
 		{	
-			$.ui.loadContent("#mainpage",false,false,"pop");			
+			//$.ui.loadContent("#mainpage",false,false,"pop");
+			$('#Home_Main')[0].click();
 		}
 	else
 		{
 			
 		document.getElementById("authResponse").innerHTML = "Incorrect Credentials";	
-		}
-	
-		
-		
-	
-		
+		}		
 }
 
-//Used to register a user on the LOGIN screen
+
+//Used to register a user on the 
 function register_User(data)
 {
 
@@ -373,36 +406,46 @@ function register_User(data)
 }
 
 
-//The following functions deal with responses when altering, adding, or removing INSTANCES from the datastore. --> Start  Study page
-//Recieve response from datastore when we add an instance with the KEY of each specific procedure
+
 function POSTsuccess_handler (data) {  
 	alert("Meow :)");
+	if (data == "Done")
+		//document.getElementById("studyResults").innerHTML = "The timestudy was added succesfully";
+		alert("The timestudy was added succesfully");
+	if (data == "TAE")
+		document.getElementById("studyResults").innerHTML = "Timestudy already exists";
+	if (data == "PnameIssue")
+		document.getElementById("procedureResults").innerHTML = "The procedure already exists, please select a different name.";
+	if (data == "procDNE")
+		document.getElementById("studyResults").innerHTML = "One of the procedures was invalid. Please doublecheck that you spelled it correctly.";
+		
 }
 function POSTerror_handler(data) {  
 	document.getElementById("instanceResults").innerHTML = "There was an error connecting to the database. Check your internet connection."; 
 }
 
 
-
+//The following functions deal with responses when altering, adding, or removing INSTANCES from the datastore. --> Start  Study page
+//Recieve response from datastore when we add an instance with the KEY of each specific procedure
 function TSInstance_handler (data) {  
 	if (data === "5")
 	{
 		//document.getElementById("frontPage").innerHTML
 		//alert("Root Procedure does not exist, data is corrupted." + data);
 		document.getElementById("instanceResults").innerHTML = "A Root Procedure does not exist, the timestudy is corrupted.";
-
+	
 	}
 	else
 	{
 		activate_subpage("#uib_page_3");
 		// Gather the data and turn it into a javasscript object.
-		var studyDetails = JSON.parse(data);
+		currentInstance = JSON.parse(data);
 		//How do we send the time stamp data back? Layer the object and then transform it into a layered dict?
-		document.getElementById("study_title").innerHTML  = '<h2>' + studyDetails.studyName + '</h2>';
-		//For each item in studyDetails initialize a new timestamp. Print out html for a new timer(cut that)
+		document.getElementById("study_title").innerHTML  = '<h2>' + currentInstance.studyName + '</h2>';
+		//For each item in currentInstance initialize a new timestamp. Print out html for a new timer(cut that)
 		
-		for (var key in studyDetails.instanceProcs) {
-			if (studyDetails.instanceProcs.hasOwnProperty(key)) {
+		for (var key in currentInstance.instanceProcs) {
+			if (currentInstance.instanceProcs.hasOwnProperty(key)) {
 				var str = '' + key;
 				$(
 			'<h3>'+key+'</h3>'																																															+   
@@ -422,7 +465,7 @@ function TSInstance_handler (data) {
 							
 							
 				 ).appendTo("#timer_container");
-				//alert(key + " -> " + studyDetails.instanceProcs[key]);
+				//alert(key + " -> " + currentInstance.instanceProcs[key]);
 				//EVENT listeners for TSInstance_handler
 		  }
 		}
@@ -434,6 +477,17 @@ function TSInstance_handler (data) {
 
 
 
+
+/*
+function initMap() {
+  // Create a map object and specify the DOM element for display.
+  var map = new google.maps.Map(document.getElementById('instmap'), {
+    center: {lat: -34.397, lng: 150.644},
+    scrollwheel: false,
+    zoom: 8
+  });
+}
+*/
 
 
 
