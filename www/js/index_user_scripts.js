@@ -4,8 +4,13 @@
 /*jslint smarttabs:true */
 /*global $ */
 
-//Global object pointer. Used to keep a log of the current procedure/studies.
- var currentInstance = {};
+
+//Global var for geolocation between scripts because I am not thinking straight
+var userLocation;
+//Global object pointer. Used to keep a log of the current mapping data. (mapit.js)
+var mapdata = {};
+//Global object pointer. Used to keep a log of the current procedure/studies. (timer-script.js)
+var currentInstance = {};
 (function()
 {
  "use strict";
@@ -14,7 +19,7 @@
  */
 	
  var Uname = "";
- var userLocation;
+ 
 
  function register_event_handlers()
  {
@@ -216,8 +221,16 @@
     $(document).on("click", "#generatemap", function(evt)
     {
         /* your code goes here */ 
-		//initMap();
-		activate_subpage("#instmap");
+		var studyName = document.getElementById("map_study").value; 
+		//alert(studyName);
+		if (studyName === "")
+			alert("tard");
+		else
+		{
+			intel.xdk.device.getRemoteData("http://proj2-1095.appspot.com/TSinstance", "POST", "name=" + studyName + "&choice=getAllCoords", "mapcoordsHandler", "POSTerror_handler");	
+			document.getElementById("base_ts").innerHTML = studyName;
+		}
+
     });
     
     
@@ -231,8 +244,35 @@
     });
     
 
+        /* button  Return */
+    $(document).on("click", ".uib_w_87", function(evt)
+    {
+         /*global activate_subpage */
+         activate_subpage("#uib_page_2"); 
+    });
+    
     }
 	
+
+
+	
+ document.addEventListener("app.Ready", register_event_handlers, false);
+	
+})();
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
 //These two functions handle getting the geolocation of the app.
     var onSuccess = function(position) 
 	{  
@@ -256,26 +296,6 @@
 	document.getElementById("frontPage").innerHTML = 'code: '    + error.code    + '\n' + 'message: ' + error.message + '\n';
     }	
 	
-
-	
- document.addEventListener("app.Ready", register_event_handlers, false);
-	
-})();
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -405,7 +425,14 @@ function register_User(data)
 		document.getElementById("authResponse").innerHTML = "Incorrect Credentials";
 }
 
-
+function mapcoordsHandler (data) {
+	
+	mapdata = JSON.parse(data);
+	console.log(data);
+	activate_subpage("#instmap");
+	initialize();	
+	
+}
 
 function POSTsuccess_handler (data) {  
 	alert("Meow :)");
@@ -421,7 +448,10 @@ function POSTsuccess_handler (data) {
 		
 }
 function POSTerror_handler(data) {  
-	document.getElementById("instanceResults").innerHTML = "There was an error connecting to the database. Check your internet connection."; 
+	if(data === "TSDNE")
+		alert( "TimeStudy does not exist");
+	else
+		alert( "There was an error connecting to the database. Check your internet connection."); 
 }
 
 
@@ -477,17 +507,6 @@ function TSInstance_handler (data) {
 
 
 
-
-/*
-function initMap() {
-  // Create a map object and specify the DOM element for display.
-  var map = new google.maps.Map(document.getElementById('instmap'), {
-    center: {lat: -34.397, lng: 150.644},
-    scrollwheel: false,
-    zoom: 8
-  });
-}
-*/
 
 
 
